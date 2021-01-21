@@ -14,9 +14,6 @@ const Mark = (props) => {
     })
 
     const parseToDOM = (node) => {
-        // const span = document.createElement("span");
-        // span.appendChild(node)
-        // return span
         const parentNode = node.parentNode
         const span = document.createElement("span");
         const newNode = node.cloneNode(true);
@@ -25,12 +22,11 @@ const Mark = (props) => {
         parentNode.replaceChild(span, node)
     }
 
-
     // 获取选取的dom信息
     const electoral = () => {
         let range = getDomRange()
+        const markArr = []
         if (range) {
-
             // 获取起始位置和终止位置
             const start = {
                 node: range.startContainer,
@@ -48,41 +44,47 @@ const Mark = (props) => {
                 newNode = splitNode(start.node, start.offset, end.offset)
                 parseToDOM(newNode)
             } else {
-                splitHeader(start)
-                splitTail(end)
+                // 多节点的时候就需要收集一次了
+                markArr.push(splitHeader(start))
+                markArr.push(splitTail(end))
+
+                markArr.forEach(item => {
+                    parseToDOM(item)
+                })
 
             }
 
             // splitTail(end)
-
         }
 
     }
 
-
-
     // 处理头部节点
     const splitHeader = (header) => {
 
-        header.node.splitText(header.offset);
+        header.node.splitText(header.offset)
         return header.node.nextSibling
     }
 
     // 处理尾部节点
     const splitTail = (tail) => {
-        console.log(tail.offset);
-        return tail.node.splitText(tail.offset);
+        console.log(tail.offset)
+        let newNode = tail.node.splitText(tail.offset)
+        return newNode.previousSibling
     }
 
     // 首尾在一个文本节点的情况
     const splitNode = (node, header, tail) => {
-        console.log(header, tail);
-
-        console.log(node.splitText(header).splitText(tail-header-1));
+        let newNode = node.splitText(header)
+        console.log(newNode);
+        let newNode2 = newNode.splitText(tail - header)
+        // console.log(newNode2);
+        // console.log(header, tail);
+        // node.splitText(header)
+        // console.log(node.splitText(header).splitText(tail - header ));
         // node.splitText(tail - header)
-        return node
+        return newNode
     }
-
 
     // dom树遍历
     const traversalDom = (header, tail) => {
@@ -96,8 +98,6 @@ const Mark = (props) => {
     const parcel = (node) => {
 
     }
-
-
 
     return (
         <div ref={markRef} onMouseUp={electoral}>
