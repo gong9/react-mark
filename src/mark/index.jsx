@@ -12,6 +12,7 @@ const Mark = (props) => {
     const markRef = useRef()
     useEffect(() => {
     })
+    const markArr = []
 
     const parseToDOM = (node) => {
         const parentNode = node.parentNode
@@ -25,7 +26,7 @@ const Mark = (props) => {
     // 获取选取的dom信息
     const electoral = () => {
         let range = getDomRange()
-        const markArr = []
+
         if (range) {
             // 获取起始位置和终止位置
             const start = {
@@ -47,11 +48,10 @@ const Mark = (props) => {
                 // 多节点的时候就需要收集一次了
                 markArr.push(splitHeader(start))
                 markArr.push(splitTail(end))
-
                 markArr.forEach(item => {
                     parseToDOM(item)
                 })
-
+                traversalDom(start, end)
             }
 
             // splitTail(end)
@@ -87,10 +87,24 @@ const Mark = (props) => {
     }
 
     // dom树遍历
-    const traversalDom = (header, tail) => {
+    const traversalDom = (start, end) => {
 
         // dom遍历并收集文本节点
         // 简单的处理肯定是使用dfs
+        let startNode = start.node
+        console.log(start.node.nextSibling)
+        console.log(end.node)
+        console.log(start.node.nextSibling == end.node);
+        // 1.先假设层级为1
+        // while (startNode.nextSibling != end.node) {
+        //     // 在判断是不是文本节点
+        //     console.log(1);
+        //     if (startNode.nextSibling.nodeType === 3) {
+        //         // dfs还是循环 ?
+        //         markArr.push(startNode.nextSibling)
+        //     }
+
+        // }
 
     }
 
