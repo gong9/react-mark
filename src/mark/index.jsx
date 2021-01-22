@@ -10,25 +10,25 @@ import './index.css'
 const Mark = (props) => {
     const { children } = props
     const markRef = useRef()
-    useEffect(() => {
-        let markRes = []
-        console.log(JSON.parse(localStorage.getItem('markDom')));
-        if (localStorage.getItem('markDom')) {
-            JSON.parse(localStorage.getItem('markDom')).forEach(
-                node => {
-                    markRes.push(deSerialize(node))
-                }
-            )
-        }
-        if (markRes.length != 0) {
-            markRes.forEach(
-                node => {
-                    parseToDOM(node)
-                }
-            )
-        }
-        console.log(markRes);
-    })
+    // useEffect(() => {
+    //     let markRes = []
+    //     console.log(JSON.parse(localStorage.getItem('markDom')));
+    //     if (localStorage.getItem('markDom')) {
+    //         JSON.parse(localStorage.getItem('markDom')).forEach(
+    //             node => {
+    //                 markRes.push(deSerialize(node))
+    //             }
+    //         )
+    //     }
+    //     if (markRes.length != 0) {
+    //         markRes.forEach(
+    //             node => {
+    //                 parseToDOM(node)
+    //             }
+    //         )
+    //     }
+    //     console.log(markRes);
+    // })
     let markArr = []
     let data = []
     let flag = 0
@@ -79,11 +79,10 @@ const Mark = (props) => {
                 markArr[0] = splitHeader(start)
                 markArr[markArr.length - 1] = splitTail(end)
 
-               
                 markArr.forEach(node => {
                     data.push(serialize(node))
                 })
-             
+                console.log(markArr)
                 markArr.forEach(node => {
                     parseToDOM(node)
                 })
@@ -102,9 +101,8 @@ const Mark = (props) => {
 
         // 这里要怎么写呢？
         // 记录每一个文本节点的具体位置，怎么记录呢？
-        console.dir(textNode);
+
         const node = findFatherNode(textNode)
-        console.log(node);
         let childIndex = -1
         for (let i = 0; i < node.childNodes.length; i++) {
             if (textNode === node.childNodes[i]) {
@@ -253,18 +251,24 @@ const Mark = (props) => {
     const traversalDom = (start, end) => {
         let currentNode = start.node
         if (currentNode.nextSibling) {
+
             while (currentNode != end.node && currentNode.nextSibling != null) {
                 collectTextNode(currentNode)
                 currentNode = currentNode.nextSibling
             }
+
             if (flag == 0) {
                 collectTextNode(currentNode)
                 findUncle(currentNode, end.node)
+            } else {
+                return
             }
+
         } else {
             collectTextNode(currentNode)
             findUncle(currentNode, end.node)
         }
+
     }
 
     return (
