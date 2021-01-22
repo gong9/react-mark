@@ -3,7 +3,7 @@ import { getDomRange } from '../util.js/getDomRange.js'
 import './index.css'
 /**
  * 1， 找到选取
- * 2.  进行包裹
+ * 2.  dom遍历
  * 3.  dom序列化与反序列化
  */
 
@@ -12,7 +12,7 @@ const Mark = (props) => {
     const markRef = useRef()
     useEffect(() => {
     })
-    const markArr = []
+    let markArr = []
     let flag = 0
 
     const parseToDOM = (node) => {
@@ -26,6 +26,7 @@ const Mark = (props) => {
 
     // 获取选取的dom信息
     const electoral = () => {
+        markArr = []
         let range = getDomRange()
 
         if (range) {
@@ -52,13 +53,12 @@ const Mark = (props) => {
 
                 markArr[0] = splitHeader(start)
                 markArr[markArr.length - 1] = splitTail(end)
-
+                console.log(markArr)
                 markArr.forEach(node => {
                     parseToDOM(node)
                 })
 
             }
-
         }
     }
 
@@ -71,9 +71,8 @@ const Mark = (props) => {
 
     // 处理尾部节点
     const splitTail = (tail) => {
-        console.log(tail.offset)
-        let newNode = tail.node.splitText(tail.offset)
-        return newNode.previousSibling
+
+        return tail.node.splitText(tail.offset).previousSibling
     }
 
     // 首尾在一个文本节点的情况
