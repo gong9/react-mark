@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { getDomRange } from '../util.js/getDomRange.js'
 import './index.css'
 /**
- * 1， 找到选取
+ * 1， 找到选区
  * 2.  dom遍历
  * 3.  dom序列化与反序列化
  */
@@ -11,10 +11,33 @@ const Mark = (props) => {
     const { children } = props
     const markRef = useRef()
     useEffect(() => {
+        let markRes = []
+        console.log(JSON.parse(localStorage.getItem('markDom')));
+        if (localStorage.getItem('markDom')) {
+            JSON.parse(localStorage.getItem('markDom')).forEach(
+                node => {
+                    markRes.push(deSerialize(node))
+                }
+            )
+        }
+        if (markRes.length != 0) {
+            markRes.forEach(
+                node => {
+                    parseToDOM(node)
+                }
+            )
+        }
+        console.log(markRes);
     })
     let markArr = []
+    let data = []
     let flag = 0
 
+    /**
+     * 
+     * @param {*} node
+     * 进行包裹 
+     */
     const parseToDOM = (node) => {
         const parentNode = node.parentNode
         const span = document.createElement("span");
@@ -24,7 +47,9 @@ const Mark = (props) => {
         parentNode.replaceChild(span, node)
     }
 
-    // 获取选取的dom信息
+    /**
+     * 获取选取的dom信息
+     */
     const electoral = () => {
         markArr = []
         let range = getDomRange()
@@ -45,60 +70,123 @@ const Mark = (props) => {
             if (start.node === end.node) {
 
                 newNode = splitNode(start.node, start.offset, end.offset)
+                data.push(serialize(newNode))
                 parseToDOM(newNode)
             } else {
                 // 多节点的时候就需要收集一次了
-
                 traversalDom(start, end)
 
                 markArr[0] = splitHeader(start)
                 markArr[markArr.length - 1] = splitTail(end)
-                console.log(markArr)
+
+               
+                markArr.forEach(node => {
+                    data.push(serialize(node))
+                })
+             
                 markArr.forEach(node => {
                     parseToDOM(node)
                 })
-
             }
+            localStorage.setItem('markDom', JSON.stringify(data))
         }
     }
 
-    // 处理头部节点
+    /**
+     * 
+     * @param {*} textNode 
+     * @param {*} root 
+     * 开始进行DOM的序列化
+     */
+    const serialize = (textNode, root = document) => {
+
+        // 这里要怎么写呢？
+        // 记录每一个文本节点的具体位置，怎么记录呢？
+        console.dir(textNode);
+        const node = findFatherNode(textNode)
+        console.log(node);
+        let childIndex = -1
+        for (let i = 0; i < node.childNodes.length; i++) {
+            if (textNode === node.childNodes[i]) {
+                childIndex = i
+                break
+            }
+        }
+
+        const tagName = node.tagName
+        const list = root.getElementsByTagName(tagName)
+        for (let index = 0; index < list.length; index++) {
+            if (node === list[index]) {
+                return { tagName, index, childIndex }
+            }
+        }
+        return { tagName, index: -1, childIndex }
+    }
+
+    /**
+     * 
+     * @param {*} meta 
+     * @param {*} root 
+     * 反序列化
+     */
+    const deSerialize = (meta, root = document) => {
+        const { tagName, index, childIndex } = meta;
+        const parent = root.getElementsByTagName(tagName)[index];
+        return parent.childNodes[childIndex];
+    }
+
+    /**
+     * 
+     * @param {*} header
+     * 处理头部节点 
+     */
     const splitHeader = (header) => {
 
         header.node.splitText(header.offset)
         return header.node.nextSibling
     }
 
-    // 处理尾部节点
+    /**
+     * 
+     * @param {*} tail 
+     * 处理尾部节点
+     */
     const splitTail = (tail) => {
 
         return tail.node.splitText(tail.offset).previousSibling
     }
 
-    // 首尾在一个文本节点的情况
+    /**
+     * 
+     * @param {*} node 
+     * @param {*} header 
+     * @param {*} tail 
+     * 首尾在一个节点的情况
+     */
     const splitNode = (node, header, tail) => {
         let newNode = node.splitText(header)
-        console.log(newNode);
         newNode.splitText(tail - header)
 
         return newNode
     }
 
-
     const findFatherNode = (node) => {
         return node.parentNode
     }
 
-    // 文本节点收集
+    /**
+     * 
+     * @param {*} node 
+     * @param {*} endNode 
+     *  文本节点收集
+     */
     const collectTextNode = (node, endNode) => {
         // dfs
-        // 可能过来的就是一个文本节点
         if (node.nodeType === 3) (
             markArr.push(node)
         )
 
         let childNodes = node.childNodes
-        console.log(childNodes.length);
         if (childNodes) {
             for (let i = 0; i < childNodes.length; i++) {
                 if (childNodes[i].nodeType === 3) {
@@ -111,14 +199,18 @@ const Mark = (props) => {
                     flag = 1
                     return
                 }
-
             }
         } else {
             return
         }
     }
 
-
+    /**
+     * 
+     * @param {*} node 
+     * @param {*} endNode 
+     * 找叔叔
+     */
     const findUncle = (node, endNode) => {
         if (node == markRef.current) {
             return
@@ -152,8 +244,12 @@ const Mark = (props) => {
         }
     }
 
-
-    // dom树遍历
+    /**
+     * 
+     * @param {*} start 
+     * @param {*} end 
+     * dom树遍历
+     */
     const traversalDom = (start, end) => {
         let currentNode = start.node
         if (currentNode.nextSibling) {
