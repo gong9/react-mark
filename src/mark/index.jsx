@@ -13,6 +13,7 @@ const Mark = (props) => {
     useEffect(() => {
     })
     const markArr = []
+    let flag = 0
 
     const parseToDOM = (node) => {
         const parentNode = node.parentNode
@@ -46,17 +47,19 @@ const Mark = (props) => {
                 parseToDOM(newNode)
             } else {
                 // 多节点的时候就需要收集一次了
-                markArr.push(splitHeader(start))
-                markArr.push(splitTail(end))
-                markArr.forEach(item => {
-                    parseToDOM(item)
-                })
+
                 traversalDom(start, end)
+
+                markArr[0] = splitHeader(start)
+                markArr[markArr.length - 1] = splitTail(end)
+
+                markArr.forEach(node => {
+                    parseToDOM(node)
+                })
+
             }
 
-            // splitTail(end)
         }
-
     }
 
     // 处理头部节点
@@ -77,40 +80,96 @@ const Mark = (props) => {
     const splitNode = (node, header, tail) => {
         let newNode = node.splitText(header)
         console.log(newNode);
-        let newNode2 = newNode.splitText(tail - header)
-        // console.log(newNode2);
-        // console.log(header, tail);
-        // node.splitText(header)
-        // console.log(node.splitText(header).splitText(tail - header ));
-        // node.splitText(tail - header)
+        newNode.splitText(tail - header)
+
         return newNode
     }
 
-    // dom树遍历
-    const traversalDom = (start, end) => {
 
-        // dom遍历并收集文本节点
-        // 简单的处理肯定是使用dfs
-        let startNode = start.node
-        console.log(start.node.nextSibling)
-        console.log(end.node)
-        console.log(start.node.nextSibling == end.node);
-        // 1.先假设层级为1
-        // while (startNode.nextSibling != end.node) {
-        //     // 在判断是不是文本节点
-        //     console.log(1);
-        //     if (startNode.nextSibling.nodeType === 3) {
-        //         // dfs还是循环 ?
-        //         markArr.push(startNode.nextSibling)
-        //     }
-
-        // }
-
+    const findFatherNode = (node) => {
+        return node.parentNode
     }
 
-    // 包裹选中的文本节点
-    const parcel = (node) => {
+    // 文本节点收集
+    const collectTextNode = (node, endNode) => {
+        // dfs
+        // 可能过来的就是一个文本节点
+        if (node.nodeType === 3) (
+            markArr.push(node)
+        )
 
+        let childNodes = node.childNodes
+        console.log(childNodes.length);
+        if (childNodes) {
+            for (let i = 0; i < childNodes.length; i++) {
+                if (childNodes[i].nodeType === 3) {
+                    markArr.push(childNodes[i])
+                } else {
+                    collectTextNode(childNodes[i])
+                }
+
+                if (childNodes[i] == endNode) {
+                    flag = 1
+                    return
+                }
+
+            }
+        } else {
+            return
+        }
+    }
+
+
+    const findUncle = (node, endNode) => {
+        if (node == markRef.current) {
+            return
+        }
+        let currentNode = node
+
+        // 到头了就找它父亲的下一个节点
+        let current_fa = findFatherNode(currentNode)
+        if (current_fa.nextSibling) {
+            collectTextNode(current_fa.nextSibling, endNode)
+            if (flag == 1) {
+                return
+            } else {
+                // 该看它的兄弟了
+                currentNode = current_fa.nextSibling
+                while (currentNode.nextSibling && flag == 0) {
+                    collectTextNode(currentNode.nextSibling, endNode)
+                    currentNode = currentNode.nextSibling
+                }
+                if (flag == 0) {
+                    // 这是说明出来的是该层最后一个节点了
+                    // 收集一下
+                    collectTextNode(currentNode)
+                    // 然后将他交给找叔叔
+                    findUncle(currentNode)
+                }
+            }
+        } else {
+            collectTextNode(currentNode)
+            findUncle(current_fa, endNode)
+        }
+    }
+
+
+    // dom树遍历
+    const traversalDom = (start, end) => {
+        let currentNode = start.node
+        if (currentNode.nextSibling) {
+            while (currentNode != end.node && currentNode.nextSibling != null) {
+                collectTextNode(currentNode)
+                currentNode = currentNode.nextSibling
+            }
+            if (flag == 0) {
+                collectTextNode(currentNode)
+                findUncle(currentNode, end.node)
+            }
+        } else {
+            collectTextNode(currentNode)
+            findUncle(currentNode, end.node)
+        }
     }
 
     return (
