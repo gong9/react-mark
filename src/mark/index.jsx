@@ -52,6 +52,7 @@ const Mark = (props) => {
      */
     const electoral = () => {
         markArr = []
+        flag = 0
         let range = getDomRange()
 
         if (range) {
@@ -70,7 +71,7 @@ const Mark = (props) => {
             if (start.node === end.node) {
 
                 newNode = splitNode(start.node, start.offset, end.offset)
-                data.push(serialize(newNode))
+                // data.push(serialize(newNode))
                 parseToDOM(newNode)
             } else {
                 // 多节点的时候就需要收集一次了
@@ -80,14 +81,13 @@ const Mark = (props) => {
                 markArr[markArr.length - 1] = splitTail(end)
 
                 markArr.forEach(node => {
-                    data.push(serialize(node))
+                    // data.push(serialize(node))
                 })
-                console.log(markArr)
                 markArr.forEach(node => {
                     parseToDOM(node)
                 })
             }
-            localStorage.setItem('markDom', JSON.stringify(data))
+            // localStorage.setItem('markDom', JSON.stringify(data))
         }
     }
 
@@ -168,6 +168,11 @@ const Mark = (props) => {
         return newNode
     }
 
+    /**
+     * 
+     * @param {*} node
+     * 拿父节点 
+     */
     const findFatherNode = (node) => {
         return node.parentNode
     }
@@ -176,38 +181,47 @@ const Mark = (props) => {
      * 
      * @param {*} node 
      * @param {*} endNode 
-     *  文本节点收集
+     *  dfs收集
      */
     const collectTextNode = (node, endNode) => {
         // dfs
-        if (node.nodeType === 3) (
-            markArr.push(node)
-        )
-
-        let childNodes = node.childNodes
-        if (childNodes) {
-            for (let i = 0; i < childNodes.length; i++) {
-                if (childNodes[i].nodeType === 3) {
-                    markArr.push(childNodes[i])
-                } else {
-                    collectTextNode(childNodes[i])
-                }
-
-                if (childNodes[i] == endNode) {
-                    flag = 1
-                    return
-                }
-            }
+        if (node.nodeType === 3) {
+            pushTextNode(node)
         } else {
-            return
+            let childNodes = node.childNodes
+            if (childNodes) {
+                for (let i = 0; i < childNodes.length; i++) {
+                    if (childNodes[i].nodeType === 3) {
+                        pushTextNode(childNodes[i])
+                        if (childNodes[i] == endNode) {
+                            flag = 1
+                            return
+                        }
+                    } else {
+                        collectTextNode(childNodes[i], endNode)
+                    }
+                }
+            } else {
+                return
+            }
         }
+    }
+
+    /**
+     * 
+     * @param {*} node
+     * mark收集 
+     */
+    const pushTextNode = (node) => {
+        console.log(markArr)
+        markArr.push(node)
     }
 
     /**
      * 
      * @param {*} node 
      * @param {*} endNode 
-     * 找叔叔
+     * 找亲叔叔😀
      */
     const findUncle = (node, endNode) => {
         if (node == markRef.current) {
@@ -217,27 +231,29 @@ const Mark = (props) => {
 
         // 到头了就找它父亲的下一个节点
         let current_fa = findFatherNode(currentNode)
+        // 看它老子是不是当前节点的最后一个呢  (╯‵□′)╯炸弹！•••*～●
         if (current_fa.nextSibling) {
             collectTextNode(current_fa.nextSibling, endNode)
             if (flag == 1) {
                 return
             } else {
-                // 该看它的兄弟了
                 currentNode = current_fa.nextSibling
-                while (currentNode.nextSibling && flag == 0) {
+                while (currentNode.nextSibling != null && flag === 0) {
                     collectTextNode(currentNode.nextSibling, endNode)
                     currentNode = currentNode.nextSibling
                 }
                 if (flag == 0) {
                     // 这是说明出来的是该层最后一个节点了
                     // 收集一下
-                    collectTextNode(currentNode)
+                    collectTextNode(currentNode, endNode)
                     // 然后将他交给找叔叔
-                    findUncle(currentNode)
+                    findUncle(currentNode, endNode)
+                } else {
+                    return
                 }
             }
         } else {
-            collectTextNode(currentNode)
+            collectTextNode(currentNode, endNode)
             findUncle(current_fa, endNode)
         }
     }
@@ -253,19 +269,19 @@ const Mark = (props) => {
         if (currentNode.nextSibling) {
 
             while (currentNode != end.node && currentNode.nextSibling != null) {
-                collectTextNode(currentNode)
+                collectTextNode(currentNode, end.node)
                 currentNode = currentNode.nextSibling
             }
 
             if (flag == 0) {
-                collectTextNode(currentNode)
+                collectTextNode(currentNode, end.node)
                 findUncle(currentNode, end.node)
             } else {
                 return
             }
 
         } else {
-            collectTextNode(currentNode)
+            collectTextNode(currentNode, end.node)
             findUncle(currentNode, end.node)
         }
 
