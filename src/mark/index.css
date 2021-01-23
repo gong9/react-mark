@@ -1,3 +1,4 @@
 .mark {
-    border-bottom: 1px solid red;
+    background-color: rgb(136, 255, 0);
+    border-radius: 3px;
 }

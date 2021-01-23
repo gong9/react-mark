@@ -1,15 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { getDomRange } from '../util.js/getDomRange.js'
 import './index.css'
-/**
- * 1， 找到选区
- * 2.  dom遍历
- * 3.  dom序列化与反序列化
- */
 
 const Mark = (props) => {
     const { children } = props
     const markRef = useRef()
+
+
     // useEffect(() => {
     //     let markRes = []
     //     console.log(JSON.parse(localStorage.getItem('markDom')));
@@ -29,9 +26,13 @@ const Mark = (props) => {
     //     }
     //     console.log(markRes);
     // })
+    let allMarkArr = []
     let markArr = []
     let data = []
     let flag = 0
+    useEffect(() => {
+        allMarkArr = []
+    }, [])
 
     /**
      * 
@@ -51,6 +52,7 @@ const Mark = (props) => {
      * 获取选取的dom信息
      */
     const electoral = () => {
+
         markArr = []
         flag = 0
         let range = getDomRange()
@@ -73,6 +75,7 @@ const Mark = (props) => {
                 newNode = splitNode(start.node, start.offset, end.offset)
                 // data.push(serialize(newNode))
                 parseToDOM(newNode)
+                // allMarkArr.push(newNode)
             } else {
                 // 多节点的时候就需要收集一次了
                 traversalDom(start, end)
@@ -86,6 +89,9 @@ const Mark = (props) => {
                 markArr.forEach(node => {
                     parseToDOM(node)
                 })
+                // let saveMark = markArr.map(node => node)
+                // allMarkArr.push(saveMark)
+                // allMarkArr = allMarkArr.flat(2)
             }
             // localStorage.setItem('markDom', JSON.stringify(data))
         }
@@ -213,8 +219,10 @@ const Mark = (props) => {
      * mark收集 
      */
     const pushTextNode = (node) => {
-        console.log(markArr)
+        // if (allMarkArr.findIndex(markNode => markNode == node) != -1) {
         markArr.push(node)
+        // }
+
     }
 
     /**
@@ -243,10 +251,7 @@ const Mark = (props) => {
                     currentNode = currentNode.nextSibling
                 }
                 if (flag == 0) {
-                    // 这是说明出来的是该层最后一个节点了
-                    // 收集一下
                     collectTextNode(currentNode, endNode)
-                    // 然后将他交给找叔叔
                     findUncle(currentNode, endNode)
                 } else {
                     return
