@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { getDomRange } from '../util.js/getDomRange.js'
 import './index.css'
 
@@ -7,25 +7,18 @@ const Mark = (props) => {
     const markRef = useRef()
 
 
-    // useEffect(() => {
-    //     let markRes = []
-    //     console.log(JSON.parse(localStorage.getItem('markDom')));
-    //     if (localStorage.getItem('markDom')) {
-    //         JSON.parse(localStorage.getItem('markDom')).forEach(
-    //             node => {
-    //                 markRes.push(deSerialize(node))
-    //             }
-    //         )
-    //     }
-    //     if (markRes.length != 0) {
-    //         markRes.forEach(
-    //             node => {
-    //                 parseToDOM(node)
-    //             }
-    //         )
-    //     }
-    //     console.log(markRes);
-    // })
+    useEffect(() => {
+        let markRes = []
+        if (localStorage.getItem('markDom')) {
+            JSON.parse(localStorage.getItem('markDom')).forEach(
+                node => {
+                    console.log(node)
+                    // markRes.push(deSerialize(node))
+                    console.log(deSerialize(node));
+                }
+            )
+        }
+    })
     let allMarkArr = []
     let markArr = []
     let data = []
@@ -40,12 +33,15 @@ const Mark = (props) => {
      * 进行包裹 
      */
     const parseToDOM = (node) => {
+
         const parentNode = node.parentNode
         const span = document.createElement("span");
         const newNode = node.cloneNode(true);
         span.appendChild(newNode)
         span.className = 'mark'
         parentNode.replaceChild(span, node)
+
+
     }
 
     /**
@@ -73,9 +69,10 @@ const Mark = (props) => {
             if (start.node === end.node) {
 
                 newNode = splitNode(start.node, start.offset, end.offset)
-                // data.push(serialize(newNode))
+                data.push(serialize(newNode))
                 parseToDOM(newNode)
-                // allMarkArr.push(newNode)
+
+
             } else {
                 // 多节点的时候就需要收集一次了
                 traversalDom(start, end)
@@ -83,17 +80,16 @@ const Mark = (props) => {
                 markArr[0] = splitHeader(start)
                 markArr[markArr.length - 1] = splitTail(end)
 
-                markArr.forEach(node => {
-                    // data.push(serialize(node))
-                })
+                markArr.forEach(node => data.push(serialize(node)))
                 markArr.forEach(node => {
                     parseToDOM(node)
                 })
+
                 // let saveMark = markArr.map(node => node)
                 // allMarkArr.push(saveMark)
                 // allMarkArr = allMarkArr.flat(2)
             }
-            // localStorage.setItem('markDom', JSON.stringify(data))
+            localStorage.setItem('markDom', JSON.stringify(data))
         }
     }
 
@@ -136,7 +132,10 @@ const Mark = (props) => {
     const deSerialize = (meta, root = document) => {
         const { tagName, index, childIndex } = meta;
         const parent = root.getElementsByTagName(tagName)[index];
-        return parent.childNodes[childIndex];
+        console.log(parent)
+
+        return parent.childNodes[childIndex]
+
     }
 
     /**
@@ -219,10 +218,7 @@ const Mark = (props) => {
      * mark收集 
      */
     const pushTextNode = (node) => {
-        // if (allMarkArr.findIndex(markNode => markNode == node) != -1) {
         markArr.push(node)
-        // }
-
     }
 
     /**
