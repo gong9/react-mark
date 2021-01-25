@@ -23,6 +23,7 @@ const Mark = (props) => {
     let markArr = []
     let data = []
     let flag = 0
+    let allTextNode = []
     useEffect(() => {
         allMarkArr = []
     }, [])
@@ -103,25 +104,64 @@ const Mark = (props) => {
 
         // 这里要怎么写呢？
         // 记录每一个文本节点的具体位置，怎么记录呢？
-
+        allTextNode = []
         const node = findFatherNode(textNode)
-        let childIndex = -1
-        for (let i = 0; i < node.childNodes.length; i++) {
-            if (textNode === node.childNodes[i]) {
-                childIndex = i
-                break
+        getAllTextNode(node)
+
+        let childIndexStart = -1
+        let childIndexend = -1
+
+        const calcLength = (index) => {
+
+            let length = 0
+            for (let i = 0; i <= index; i++) {
+                length = length + allTextNode[index].length
             }
+            return length
         }
 
+
+        let Index = allTextNode.findIndex(textnode => textnode === textNode)
+        if (Index === 0) {
+            childIndexStart = 0
+            childIndexend = calcLength(Index)
+        } else if (Index === allTextNode.length - 1) {
+            childIndexStart = calcLength(Index - 1)
+            childIndexend = calcLength(Index)
+        } else {
+            childIndexStart = calcLength(Index - 1)
+            childIndexend = calcLength(Index + 1)
+        }
+       
+        // 只需要记住它父亲的节点就可以😬,我这里可以拿到需要改造的位置
         const tagName = node.tagName
         const list = root.getElementsByTagName(tagName)
+
         for (let index = 0; index < list.length; index++) {
             if (node === list[index]) {
-                return { tagName, index, childIndex }
+                return { tagName, index, childIndexStart, childIndexend }
             }
         }
-        return { tagName, index: -1, childIndex }
+        return { tagName, index: -1, childIndexStart, childIndexend }
     }
+
+    /**
+     * 
+     * @param {*} proNode 
+     * 获取全部文本节点，还是dfs
+     */
+    const getAllTextNode = (proNode) => {
+        if (!proNode.childNodes) return
+        for (let i = 0; i < proNode.childNodes.length; i++) {
+            if (proNode.childNodes[i].nodeType === 3) {
+                allTextNode.push(proNode.childNodes[i])
+            } else {
+                getAllTextNode(proNode.childNodes[i])
+            }
+        }
+    }
+
+
 
     /**
      * 
@@ -135,7 +175,6 @@ const Mark = (props) => {
         console.log(parent)
 
         return parent.childNodes[childIndex]
-
     }
 
     /**
