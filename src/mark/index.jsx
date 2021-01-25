@@ -132,7 +132,7 @@ const Mark = (props) => {
             childIndexStart = calcLength(Index - 1)
             childIndexend = calcLength(Index + 1)
         }
-       
+
         // 只需要记住它父亲的节点就可以😬,我这里可以拿到需要改造的位置
         const tagName = node.tagName
         const list = root.getElementsByTagName(tagName)
