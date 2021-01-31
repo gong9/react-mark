@@ -161,8 +161,6 @@ const Mark = (props) => {
         }
     }
 
-
-
     /**
      * 
      * @param {*} meta 
@@ -172,8 +170,6 @@ const Mark = (props) => {
     const deSerialize = (meta, root = document) => {
         const { tagName, index, childIndex } = meta;
         const parent = root.getElementsByTagName(tagName)[index];
-        console.log(parent)
-
         return parent.childNodes[childIndex]
     }
 
@@ -194,7 +190,6 @@ const Mark = (props) => {
      * 处理尾部节点
      */
     const splitTail = (tail) => {
-
         return tail.node.splitText(tail.offset).previousSibling
     }
 
@@ -208,7 +203,6 @@ const Mark = (props) => {
     const splitNode = (node, header, tail) => {
         let newNode = node.splitText(header)
         newNode.splitText(tail - header)
-
         return newNode
     }
 
@@ -271,7 +265,6 @@ const Mark = (props) => {
             return
         }
         let currentNode = node
-
         // 到头了就找它父亲的下一个节点
         let current_fa = findFatherNode(currentNode)
         // 看它老子是不是当前节点的最后一个呢  (╯‵□′)╯炸弹！•••*～●
@@ -307,7 +300,6 @@ const Mark = (props) => {
     const traversalDom = (start, end) => {
         let currentNode = start.node
         if (currentNode.nextSibling) {
-
             while (currentNode != end.node && currentNode.nextSibling != null) {
                 collectTextNode(currentNode, end.node)
                 currentNode = currentNode.nextSibling
@@ -319,7 +311,6 @@ const Mark = (props) => {
             } else {
                 return
             }
-
         } else {
             collectTextNode(currentNode, end.node)
             findUncle(currentNode, end.node)
