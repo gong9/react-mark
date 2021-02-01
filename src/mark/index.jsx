@@ -13,8 +13,8 @@ const Mark = (props) => {
             JSON.parse(localStorage.getItem('markDom')).forEach(
                 node => {
                     console.log(node)
-                    // markRes.push(deSerialize(node))
-                    console.log(deSerialize(node));
+                    console.log(deSerialize(node))
+                    // parseToDOM(deSerialize(node))
                 }
             )
         }
@@ -103,11 +103,13 @@ const Mark = (props) => {
     const serialize = (textNode, root = document) => {
 
         // 这里要怎么写呢？
-        // 记录每一个文本节点的具体位置，怎么记录呢？
+        // 记录每一个文本节点的具体位置，怎么记录呢？ 
+        //childIndex 是在
         allTextNode = []
         const node = findFatherNode(textNode)
         getAllTextNode(node)
 
+        // 拿该文本节点在他父亲种的所有文本节点的前后偏移量
         let childIndexStart = -1
         let childIndexend = -1
 
@@ -123,8 +125,8 @@ const Mark = (props) => {
 
         let Index = allTextNode.findIndex(textnode => textnode === textNode)
         if (Index === 0) {
-            childIndexStart = 0
-            childIndexend = calcLength(Index)
+            childIndexStart = 0     //前偏移
+            childIndexend = calcLength(Index)   //后偏移
         } else if (Index === allTextNode.length - 1) {
             childIndexStart = calcLength(Index - 1)
             childIndexend = calcLength(Index)
@@ -133,14 +135,22 @@ const Mark = (props) => {
             childIndexend = calcLength(Index + 1)
         }
 
-        // 只需要记住它父亲的节点就可以😬,我这里可以拿到需要改造的位置
+        // 找出这个文本节点是其父节点的第几个孩子
+        // for (let i = 0; i < allTextNode.length; i++) {
+        //     if (allTextNode[i] === textNode) {
+        //         childIndex = i
+        //     }
+        // }
+        // 通过它父亲的节点进行定位就可以😬
         const tagName = node.tagName
         const list = root.getElementsByTagName(tagName)
 
+        console.log(node.childNodes)
         for (let index = 0; index < list.length; index++) {
             if (node === list[index]) {
                 return { tagName, index, childIndexStart, childIndexend }
             }
+
         }
         return { tagName, index: -1, childIndexStart, childIndexend }
     }
@@ -168,8 +178,10 @@ const Mark = (props) => {
      * 反序列化
      */
     const deSerialize = (meta, root = document) => {
-        const { tagName, index, childIndex } = meta;
-        const parent = root.getElementsByTagName(tagName)[index];
+        const { tagName, index, childIndex } = meta
+        const parent = root.getElementsByTagName(tagName)[index]
+
+        // 通过传进来的文本偏移量定位到该mark的数据，这里肯定不能是这么简单的写
         return parent.childNodes[childIndex]
     }
 
