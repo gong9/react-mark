@@ -8,7 +8,6 @@ const Mark = (props) => {
 
 
     useEffect(() => {
-        let markRes = []
         if (localStorage.getItem('markDom')) {
             JSON.parse(localStorage.getItem('markDom')).forEach(
                 node => {
@@ -205,13 +204,15 @@ const Mark = (props) => {
             length = length + allTextNode[i].length
             if (length >= childIndexStart) {
                 nodeIndexStart = i
+                break;
             }
         }
-
+        console.log(nodeIndexStart)
         for (let j = 0; j < allTextNode.length; j++) {
             length2 = length2 + allTextNode[j].length
             if (length2 >= childIndexend) {
                 nodeIndexEnd = j
+                break;
             }
         }
 
@@ -230,6 +231,7 @@ const Mark = (props) => {
 
         // 现在仅是拿到了文本节点，还得拿到选中得文本节点在该文本节点得文本偏移量
         console.log(nodeIndexStart)
+        console.log(parent.childNodes)
         console.log(parent.childNodes[nodeIndexStart], childIndexStart - length3, childIndexend - length3);
 
         // 通过传进来的文本偏移量定位到该mark的数据，这里肯定不能是这么简单的写
