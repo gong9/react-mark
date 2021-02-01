@@ -14,7 +14,6 @@ const Mark = (props) => {
                 node => {
                     console.log(node)
                     console.log(deSerialize(node))
-                    // parseToDOM(deSerialize(node))
                 }
             )
         }
@@ -112,11 +111,24 @@ const Mark = (props) => {
         // 拿该文本节点在他父亲种的所有文本节点的前后偏移量
         let childIndexStart = -1
         let childIndexend = -1
+        let childIndex = -1
 
-        const calcLength = (index) => {
+
+        // 计算前置偏移
+        const calcLeftLength = (index) => {
 
             let length = 0
-            for (let i = 0; i <= index; i++) {
+            for (let i = 0; i < index; i++) {
+                length = length + allTextNode[i].length
+            }
+            return length
+        }
+
+        // 计算后置偏移
+        const calcRightLength = (index) => {
+
+            let length = 0
+            for (let i = index + 1; i < allTextNode.length; i++) {
                 length = length + allTextNode[index].length
             }
             return length
@@ -126,33 +138,30 @@ const Mark = (props) => {
         let Index = allTextNode.findIndex(textnode => textnode === textNode)
         if (Index === 0) {
             childIndexStart = 0     //前偏移
-            childIndexend = calcLength(Index)   //后偏移
+            childIndexend = calcLeftLength(Index + 1)   //后偏移
         } else if (Index === allTextNode.length - 1) {
-            childIndexStart = calcLength(Index - 1)
-            childIndexend = calcLength(Index)
+            childIndexStart = calcLeftLength(Index)
+            childIndexend = calcLeftLength(Index + 1)
         } else {
-            childIndexStart = calcLength(Index - 1)
-            childIndexend = calcLength(Index + 1)
+            childIndexStart = calcLeftLength(Index)
+            childIndexend = calcLeftLength(Index + 1)
         }
 
         // 找出这个文本节点是其父节点的第几个孩子
-        // for (let i = 0; i < allTextNode.length; i++) {
-        //     if (allTextNode[i] === textNode) {
-        //         childIndex = i
-        //     }
-        // }
+        for (let i = 0; i < node.childNodes.length; i++) {
+            if (node.childNode[i] === textNode) {
+                childIndex = i
+            }
+        }
         // 通过它父亲的节点进行定位就可以😬
         const tagName = node.tagName
         const list = root.getElementsByTagName(tagName)
-
-        console.log(node.childNodes)
         for (let index = 0; index < list.length; index++) {
             if (node === list[index]) {
-                return { tagName, index, childIndexStart, childIndexend }
+                return { tagName, index, childIndexStart, childIndexend, childIndex }
             }
-
         }
-        return { tagName, index: -1, childIndexStart, childIndexend }
+        return { tagName, index: -1, childIndexStart, childIndexend, childIndex }
     }
 
     /**
@@ -178,11 +187,41 @@ const Mark = (props) => {
      * 反序列化
      */
     const deSerialize = (meta, root = document) => {
-        const { tagName, index, childIndex } = meta
+        const { tagName, index, childIndexStart, childIndexend, childIndex } = meta
         const parent = root.getElementsByTagName(tagName)[index]
 
+        allTextNode = []
+        getAllTextNode(parent)
+        console.log(allTextNode)
+        let nodeIndexStart = -1
+
+        // 这里需要找一个区间
+        // 有左右偏移量的情况，处理左右偏移量
+
+        // let length3 = 0
+
+        // 找目标文本节点对应的位置
+
+
+        const calcLeftLength = (index) => {
+            let length = 0
+            for (let i = 0; i < index; i++) {
+                length = length + allTextNode[i].length
+            }
+            return length
+        }
+        length3 = calcLeftLength(nodeIndexStart)
+
+        // 下面又是不同的出口
+        // 1 ij指的是同一个文本节点（那么就只有这一种情况）
+        // 2 ij指的是不同的文本节点（这好像是不可能的）
+
+        // 现在仅是拿到了文本节点，还得拿到选中得文本节点在该文本节点得文本偏移量
+        console.log(nodeIndexStart)
+        console.log(parent.childNodes[childIndex], childIndexStart - length3, childIndexend - length3);
+
         // 通过传进来的文本偏移量定位到该mark的数据，这里肯定不能是这么简单的写
-        return parent.childNodes[childIndex]
+        return splitNode(parent.childNodes[nodeIndexStart], childIndexStart - length3, childIndexend - length3)
     }
 
     /**
