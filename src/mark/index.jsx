@@ -13,7 +13,7 @@ const Mark = (props) => {
             JSON.parse(localStorage.getItem('markDom')).forEach(
                 node => {
                     console.log(node)
-                    console.log(deSerialize(node))
+                    console.log(parseToDOM(deSerialize(node)))
                 }
             )
         }
@@ -148,20 +148,20 @@ const Mark = (props) => {
         }
 
         // 找出这个文本节点是其父节点的第几个孩子
-        for (let i = 0; i < node.childNodes.length; i++) {
-            if (node.childNode[i] === textNode) {
-                childIndex = i
-            }
-        }
+        // for (let i = 0; i < node.childNodes.length; i++) {
+        //     if (node.childNode[i] === textNode) {
+        //         childIndex = i
+        //     }
+        // }
         // 通过它父亲的节点进行定位就可以😬
         const tagName = node.tagName
         const list = root.getElementsByTagName(tagName)
         for (let index = 0; index < list.length; index++) {
             if (node === list[index]) {
-                return { tagName, index, childIndexStart, childIndexend, childIndex }
+                return { tagName, index, childIndexStart, childIndexend }
             }
         }
-        return { tagName, index: -1, childIndexStart, childIndexend, childIndex }
+        return { tagName, index: -1, childIndexStart, childIndexend }
     }
 
     /**
@@ -187,21 +187,33 @@ const Mark = (props) => {
      * 反序列化
      */
     const deSerialize = (meta, root = document) => {
-        const { tagName, index, childIndexStart, childIndexend, childIndex } = meta
+        const { tagName, index, childIndexStart, childIndexend } = meta
         const parent = root.getElementsByTagName(tagName)[index]
 
         allTextNode = []
         getAllTextNode(parent)
         console.log(allTextNode)
         let nodeIndexStart = -1
+        let nodeIndexEnd = -1
 
         // 这里需要找一个区间
         // 有左右偏移量的情况，处理左右偏移量
+        let length = 0
+        let length2 = 0
+        let length3 = 0
+        for (let i = 0; i < allTextNode.length; i++) {
+            length = length + allTextNode[i].length
+            if (length >= childIndexStart) {
+                nodeIndexStart = i
+            }
+        }
 
-        // let length3 = 0
-
-        // 找目标文本节点对应的位置
-
+        for (let j = 0; j < allTextNode.length; j++) {
+            length2 = length2 + allTextNode[j].length
+            if (length2 >= childIndexend) {
+                nodeIndexEnd = j
+            }
+        }
 
         const calcLeftLength = (index) => {
             let length = 0
@@ -218,7 +230,7 @@ const Mark = (props) => {
 
         // 现在仅是拿到了文本节点，还得拿到选中得文本节点在该文本节点得文本偏移量
         console.log(nodeIndexStart)
-        console.log(parent.childNodes[childIndex], childIndexStart - length3, childIndexend - length3);
+        console.log(parent.childNodes[nodeIndexStart], childIndexStart - length3, childIndexend - length3);
 
         // 通过传进来的文本偏移量定位到该mark的数据，这里肯定不能是这么简单的写
         return splitNode(parent.childNodes[nodeIndexStart], childIndexStart - length3, childIndexend - length3)
