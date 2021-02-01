@@ -34,13 +34,14 @@ const Mark = (props) => {
     const parseToDOM = (node) => {
 
         const parentNode = node.parentNode
-        const span = document.createElement("span");
-        const newNode = node.cloneNode(true);
-        span.appendChild(newNode)
-        span.className = 'mark'
-        console.log(parentNode)
-        parentNode.replaceChild(span, node)
-
+        // 这个情况我现在也不知道是哪里出来的bug
+        if (parentNode) {
+            const span = document.createElement("span");
+            const newNode = node.cloneNode(true);
+            span.appendChild(newNode)
+            span.className = 'mark'
+            parentNode.replaceChild(span, node)
+        }
 
     }
 
@@ -229,7 +230,8 @@ const Mark = (props) => {
         // 现在仅是拿到了文本节点，还得拿到选中得文本节点在该文本节点得文本偏移量
         console.log(nodeIndexStart)
         console.log(parent.childNodes)
-        console.log(parent.childNodes[nodeIndexStart], childIndexStart - length3, childIndexend - length3);
+        console.log(parent.childNodes[nodeIndexStart], childIndexStart - length3, childIndexend - length3)
+        空节点的误触
 
         // 通过传进来的文本偏移量定位到该mark的数据，这里肯定不能是这么简单的写
         return splitNode(parent.childNodes[nodeIndexStart], childIndexStart - length3, childIndexend - length3)
