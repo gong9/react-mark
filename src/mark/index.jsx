@@ -38,6 +38,7 @@ const Mark = (props) => {
         const newNode = node.cloneNode(true);
         span.appendChild(newNode)
         span.className = 'mark'
+        console.log(parentNode)
         parentNode.replaceChild(span, node)
 
 
@@ -78,15 +79,11 @@ const Mark = (props) => {
 
                 markArr[0] = splitHeader(start)
                 markArr[markArr.length - 1] = splitTail(end)
-
                 markArr.forEach(node => data.push(serialize(node)))
                 markArr.forEach(node => {
                     parseToDOM(node)
                 })
 
-                // let saveMark = markArr.map(node => node)
-                // allMarkArr.push(saveMark)
-                // allMarkArr = allMarkArr.flat(2)
             }
             localStorage.setItem('markDom', JSON.stringify(data))
         }
@@ -313,10 +310,13 @@ const Mark = (props) => {
     /**
      * 
      * @param {*} node
-     * mark收集 
+     * mark收集 ，肯定有重复收集的问题
      */
     const pushTextNode = (node) => {
-        markArr.push(node)
+        if (markArr.findIndex(item => node === item) === -1) {
+            markArr.push(node)
+        }
+
     }
 
     /**
