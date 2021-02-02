@@ -231,7 +231,8 @@ const Mark = (props) => {
         console.log(nodeIndexStart)
         console.log(parent.childNodes)
         console.log(parent.childNodes[nodeIndexStart], childIndexStart - length3, childIndexend - length3)
-        空节点的误触
+
+        // 空节点的问题！！！！！
 
         // 通过传进来的文本偏移量定位到该mark的数据，这里肯定不能是这么简单的写
         return splitNode(parent.childNodes[nodeIndexStart], childIndexStart - length3, childIndexend - length3)
