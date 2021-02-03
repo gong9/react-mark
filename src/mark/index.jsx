@@ -2,6 +2,14 @@ import React, { useEffect, useRef } from 'react';
 import { getDomRange } from '../util.js/getDomRange.js'
 import './index.css'
 
+
+/**
+ * 
+ * 处理维度问题
+ * 选区重复（利用维度进行处理） 
+ */
+
+
 const Mark = (props) => {
     const { children } = props
     const markRef = useRef()
@@ -24,9 +32,7 @@ const Mark = (props) => {
     let data = []
     let flag = 0
     let allTextNode = []
-    useEffect(() => {
-        allMarkArr = []
-    }, [])
+
 
     /**
      * 
@@ -179,7 +185,6 @@ const Mark = (props) => {
             length3 = calcLeftLength(nodeIndexStart)
             return splitNode(parent.childNodes[nodeIndexStart], childIndexStart - length3, childIndexend - length3)
         }
-
     }
 
     /**
@@ -220,7 +225,12 @@ const Mark = (props) => {
      * 拿父节点 
      */
     const findFatherNode = (node) => {
-        return node.parentNode
+        // if (node.parentNode.className !== 'mark') {
+            return node.parentNode
+        // } else {
+        //     findFatherNode(node.parentNode)
+        // }
+
     }
 
     /**
