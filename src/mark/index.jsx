@@ -84,7 +84,6 @@ const Mark = (props) => {
                 markArr.forEach(node => {
                     parseToDOM(node)
                 })
-
             }
             localStorage.setItem('markDom', JSON.stringify(data))
         }
