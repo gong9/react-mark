@@ -15,6 +15,7 @@ const Mark = (props) => {
                     markArr02.push(deSerialize(node))
                 }
             )
+            markArr02 = markArr02.filter(node => { if (node) return node })
             markArr02.forEach(markNode => parseToDOM(markNode))
 
         }
@@ -24,6 +25,7 @@ const Mark = (props) => {
     let data = []
     let flag = 0
     let allTextNode = []
+    let indexflag = 0
     useEffect(() => {
         allMarkArr = []
     }, [])
@@ -76,7 +78,7 @@ const Mark = (props) => {
                 markArr[0] = splitHeader(start)
                 markArr[markArr.length - 1] = splitTail(end)
 
-                // 诊断：
+                // 诊断
                 let RDArr = [...new Set(markArr)]
                 console.log(RDArr)
 
@@ -126,8 +128,10 @@ const Mark = (props) => {
         // 通过它父亲的节点进行定位就可以😬
         const tagName = node.tagName
         const list = root.getElementsByTagName(tagName)
-        for (let index = 0; index < list.length; index++) {
-            if (node === list[index]) {
+        // 去掉mark的
+        const newList = [...list].filter(node => node.className !== "mark")
+        for (let index = 0; index < newList.length; index++) {
+            if (node === newList[index]) {
                 return { tagName, index, childIndexStart, childIndexend }
             }
         }
@@ -140,7 +144,8 @@ const Mark = (props) => {
      * 获取全部文本节点，还是dfs
      */
     const getAllTextNode = (proNode) => {
-        if (!proNode.childNodes) return
+        if (proNode.childNodes.length === 0) return
+        console.log(proNode);
         for (let i = 0; i < proNode.childNodes.length; i++) {
             if (proNode.childNodes[i].nodeType === 3) {
                 allTextNode.push(proNode.childNodes[i])
@@ -160,27 +165,30 @@ const Mark = (props) => {
         const { tagName, index, childIndexStart, childIndexend } = meta
         const parent = root.getElementsByTagName(tagName)[index]
         allTextNode = []
-        getAllTextNode(parent)
-        let nodeIndexStart = -1
-        let length = 0
-        let length3 = 0
-        for (let i = 0; i < allTextNode.length; i++) {
-            length = length + allTextNode[i].length
-            if (length >= childIndexStart) {
-                nodeIndexStart = i
-                break;
-            }
-        }
-        const calcLeftLength = (index) => {
+        if (parent) {
+            getAllTextNode(parent)
+            let nodeIndexStart = -1
             let length = 0
-            for (let i = 0; i < index; i++) {
+            let length3 = 0
+            for (let i = 0; i < allTextNode.length; i++) {
                 length = length + allTextNode[i].length
+                if (length >= childIndexStart) {
+                    nodeIndexStart = i
+                    break;
+                }
             }
-            return length
+            const calcLeftLength = (index) => {
+                let length = 0
+                for (let i = 0; i < index; i++) {
+                    length = length + allTextNode[i].length
+                }
+                return length
+            }
+
+            length3 = calcLeftLength(nodeIndexStart)
+            return splitNode(parent.childNodes[nodeIndexStart], childIndexStart - length3, childIndexend - length3)
         }
 
-        length3 = calcLeftLength(nodeIndexStart)
-        return splitNode(parent.childNodes[nodeIndexStart], childIndexStart - length3, childIndexend - length3)
     }
 
     /**
