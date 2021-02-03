@@ -6,15 +6,17 @@ const Mark = (props) => {
     const { children } = props
     const markRef = useRef()
 
-
+    let markArr02 = []
     useEffect(() => {
+        //进行反序列化处理
         if (localStorage.getItem('markDom')) {
             JSON.parse(localStorage.getItem('markDom')).forEach(
                 node => {
-                    console.log(node)
-                    console.log(parseToDOM(deSerialize(node)))
+                    markArr02.push(deSerialize(node))
                 }
             )
+            markArr02.forEach(markNode => parseToDOM(markNode))
+
         }
     })
     let allMarkArr = []
@@ -34,7 +36,6 @@ const Mark = (props) => {
     const parseToDOM = (node) => {
 
         const parentNode = node.parentNode
-        // 这个情况我现在也不知道是哪里出来的bug
         if (parentNode) {
             const span = document.createElement("span");
             const newNode = node.cloneNode(true);
@@ -74,8 +75,13 @@ const Mark = (props) => {
                 traversalDom(start, end)
                 markArr[0] = splitHeader(start)
                 markArr[markArr.length - 1] = splitTail(end)
-                markArr.forEach(node => data.push(serialize(node)))
-                markArr.forEach(node => {
+
+                // 诊断：
+                let RDArr = [...new Set(markArr)]
+                console.log(RDArr)
+
+                RDArr.forEach(node => data.push(serialize(node)))
+                RDArr.forEach(node => {
                     parseToDOM(node)
                 })
             }
@@ -105,17 +111,16 @@ const Mark = (props) => {
             }
             return length
         }
-
         let Index = allTextNode.findIndex(textnode => textnode === textNode)
         if (Index === 0) {
             childIndexStart = 0     //前偏移
-            childIndexend = calcLeftLength(Index + 1)   //后偏移
+            childIndexend = childIndexStart + textNode.length //后偏移
         } else if (Index === allTextNode.length - 1) {
             childIndexStart = calcLeftLength(Index)
-            childIndexend = calcLeftLength(Index + 1)
+            childIndexend = childIndexStart + textNode.length
         } else {
             childIndexStart = calcLeftLength(Index)
-            childIndexend = calcLeftLength(Index + 1)
+            childIndexend = childIndexStart + textNode.length
         }
 
         // 通过它父亲的节点进行定位就可以😬
@@ -157,9 +162,7 @@ const Mark = (props) => {
         allTextNode = []
         getAllTextNode(parent)
         let nodeIndexStart = -1
-        let nodeIndexEnd = -1
         let length = 0
-        let length2 = 0
         let length3 = 0
         for (let i = 0; i < allTextNode.length; i++) {
             length = length + allTextNode[i].length
@@ -168,14 +171,6 @@ const Mark = (props) => {
                 break;
             }
         }
-        for (let j = 0; j < allTextNode.length; j++) {
-            length2 = length2 + allTextNode[j].length
-            if (length2 >= childIndexend) {
-                nodeIndexEnd = j
-                break;
-            }
-        }
-
         const calcLeftLength = (index) => {
             let length = 0
             for (let i = 0; i < index; i++) {
