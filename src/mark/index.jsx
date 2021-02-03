@@ -20,7 +20,6 @@ const Mark = (props) => {
 
         }
     })
-    let allMarkArr = []
     let markArr = []
     let data = []
     let flag = 0
