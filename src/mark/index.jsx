@@ -25,7 +25,6 @@ const Mark = (props) => {
     let data = []
     let flag = 0
     let allTextNode = []
-    let indexflag = 0
     useEffect(() => {
         allMarkArr = []
     }, [])
@@ -45,14 +44,12 @@ const Mark = (props) => {
             span.className = 'mark'
             parentNode.replaceChild(span, node)
         }
-
     }
 
     /**
      * 获取选取的dom信息
      */
     const electoral = () => {
-
         markArr = []
         flag = 0
         let range = getDomRange()
@@ -77,11 +74,7 @@ const Mark = (props) => {
                 traversalDom(start, end)
                 markArr[0] = splitHeader(start)
                 markArr[markArr.length - 1] = splitTail(end)
-
-                // 诊断
                 let RDArr = [...new Set(markArr)]
-                console.log(RDArr)
-
                 RDArr.forEach(node => data.push(serialize(node)))
                 RDArr.forEach(node => {
                     parseToDOM(node)
@@ -128,7 +121,7 @@ const Mark = (props) => {
         // 通过它父亲的节点进行定位就可以😬
         const tagName = node.tagName
         const list = root.getElementsByTagName(tagName)
-        // 去掉mark的
+        // 去掉mark所占的位置
         const newList = [...list].filter(node => node.className !== "mark")
         for (let index = 0; index < newList.length; index++) {
             if (node === newList[index]) {
@@ -184,7 +177,6 @@ const Mark = (props) => {
                 }
                 return length
             }
-
             length3 = calcLeftLength(nodeIndexStart)
             return splitNode(parent.childNodes[nodeIndexStart], childIndexStart - length3, childIndexend - length3)
         }
@@ -197,7 +189,6 @@ const Mark = (props) => {
      * 处理头部节点 
      */
     const splitHeader = (header) => {
-
         header.node.splitText(header.offset)
         return header.node.nextSibling
     }
@@ -272,7 +263,6 @@ const Mark = (props) => {
         if (markArr.findIndex(item => node === item) === -1) {
             markArr.push(node)
         }
-
     }
 
     /**
@@ -334,7 +324,6 @@ const Mark = (props) => {
             collectTextNode(currentNode, end.node)
             findUncle(currentNode, end.node)
         }
-
     }
 
     return (
