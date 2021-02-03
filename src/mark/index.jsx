@@ -53,7 +53,6 @@ const Mark = (props) => {
         markArr = []
         flag = 0
         let range = getDomRange()
-
         if (range) {
             // 获取起始位置和终止位置
             const start = {
@@ -64,20 +63,15 @@ const Mark = (props) => {
                 node: range.endContainer,
                 offset: range.endOffset
             }
-            // 2. 处理头尾
-            // 首尾是一个节点的情况,应该是取一个交集
             let newNode
+            // 2. 处理头尾-----首尾是一个节点的情况,应该是取一个交集
             if (start.node === end.node) {
-
                 newNode = splitNode(start.node, start.offset, end.offset)
                 data.push(serialize(newNode))
                 parseToDOM(newNode)
-
-
             } else {
-                // 多节点的时候就需要收集一次了
+                // 多节点的情况
                 traversalDom(start, end)
-
                 markArr[0] = splitHeader(start)
                 markArr[markArr.length - 1] = splitTail(end)
                 markArr.forEach(node => data.push(serialize(node)))
@@ -94,42 +88,23 @@ const Mark = (props) => {
      * @param {*} textNode 
      * @param {*} root 
      * 开始进行DOM的序列化
+     * 
      */
     const serialize = (textNode, root = document) => {
-
-        // 这里要怎么写呢？
-        // 记录每一个文本节点的具体位置，怎么记录呢？ 
-        //childIndex 是在
         allTextNode = []
         const node = findFatherNode(textNode)
         getAllTextNode(node)
-
-        // 拿该文本节点在他父亲种的所有文本节点的前后偏移量
         let childIndexStart = -1
         let childIndexend = -1
-        let childIndex = -1
-
 
         // 计算前置偏移
         const calcLeftLength = (index) => {
-
             let length = 0
             for (let i = 0; i < index; i++) {
                 length = length + allTextNode[i].length
             }
             return length
         }
-
-        // 计算后置偏移
-        const calcRightLength = (index) => {
-
-            let length = 0
-            for (let i = index + 1; i < allTextNode.length; i++) {
-                length = length + allTextNode[index].length
-            }
-            return length
-        }
-
 
         let Index = allTextNode.findIndex(textnode => textnode === textNode)
         if (Index === 0) {
@@ -143,12 +118,6 @@ const Mark = (props) => {
             childIndexend = calcLeftLength(Index + 1)
         }
 
-        // 找出这个文本节点是其父节点的第几个孩子
-        // for (let i = 0; i < node.childNodes.length; i++) {
-        //     if (node.childNode[i] === textNode) {
-        //         childIndex = i
-        //     }
-        // }
         // 通过它父亲的节点进行定位就可以😬
         const tagName = node.tagName
         const list = root.getElementsByTagName(tagName)
@@ -185,15 +154,10 @@ const Mark = (props) => {
     const deSerialize = (meta, root = document) => {
         const { tagName, index, childIndexStart, childIndexend } = meta
         const parent = root.getElementsByTagName(tagName)[index]
-
         allTextNode = []
         getAllTextNode(parent)
-        console.log(allTextNode)
         let nodeIndexStart = -1
         let nodeIndexEnd = -1
-
-        // 这里需要找一个区间
-        // 有左右偏移量的情况，处理左右偏移量
         let length = 0
         let length2 = 0
         let length3 = 0
@@ -204,7 +168,6 @@ const Mark = (props) => {
                 break;
             }
         }
-        console.log(nodeIndexStart)
         for (let j = 0; j < allTextNode.length; j++) {
             length2 = length2 + allTextNode[j].length
             if (length2 >= childIndexend) {
@@ -220,20 +183,8 @@ const Mark = (props) => {
             }
             return length
         }
+
         length3 = calcLeftLength(nodeIndexStart)
-
-        // 下面又是不同的出口
-        // 1 ij指的是同一个文本节点（那么就只有这一种情况）
-        // 2 ij指的是不同的文本节点（这好像是不可能的）
-
-        // 现在仅是拿到了文本节点，还得拿到选中得文本节点在该文本节点得文本偏移量
-        console.log(nodeIndexStart)
-        console.log(parent.childNodes)
-        console.log(parent.childNodes[nodeIndexStart], childIndexStart - length3, childIndexend - length3)
-
-        // 空节点的问题！！！！！
-
-        // 通过传进来的文本偏移量定位到该mark的数据，这里肯定不能是这么简单的写
         return splitNode(parent.childNodes[nodeIndexStart], childIndexStart - length3, childIndexend - length3)
     }
 
@@ -332,7 +283,6 @@ const Mark = (props) => {
             return
         }
         let currentNode = node
-        // 到头了就找它父亲的下一个节点
         let current_fa = findFatherNode(currentNode)
         // 看它老子是不是当前节点的最后一个呢  (╯‵□′)╯炸弹！•••*～●
         if (current_fa.nextSibling) {
@@ -371,7 +321,6 @@ const Mark = (props) => {
                 collectTextNode(currentNode, end.node)
                 currentNode = currentNode.nextSibling
             }
-
             if (flag == 0) {
                 collectTextNode(currentNode, end.node)
                 findUncle(currentNode, end.node)
