@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .test02 {
+        width: 202px;
+        word-wrap: break-word;
+    }
+</style>
+
+<body>
+    <div class="test">
+        <p class="test02">你好啊，亲你是谁啊</p>
+        <p>我是第二段</p>
+        <p>我是第三段</p>
+    </div>
+
+</body>
+
+</html>
+<script>
+    document.querySelector('.test').addEventListener('mouseup', () => {
+        const selObj = window.getSelection()
+        console.log(selObj.getRangeAt(0))
+        if (selObj.isCollapsed) {
+            let index = selObj.anchorOffset
+            let testNode = selObj.anchorNode.splitText(index).previousSibling
+            const faNode = selObj.anchorNode.parentNode
+            const newNode = document.createTextNode('这是新加的')
+            console.log(newNode)
+            faNode.insertBefore(newNode, testNode)
+        }
+
+    })
+
+</script>

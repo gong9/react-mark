@@ -2,14 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { getDomRange } from '../util.js/getDomRange.js'
 import './index.css'
 
-
-/**
- * 
- * 处理维度问题
- * 选区重复（利用维度进行处理） 
- */
-
-
 const Mark = (props) => {
     const { children } = props
     const markRef = useRef()
@@ -51,7 +43,7 @@ const Mark = (props) => {
         }
     }
 
-    /**
+    /**；
      * 获取选取的dom信息
      */
     const electoral = () => {
@@ -68,6 +60,8 @@ const Mark = (props) => {
                 node: range.endContainer,
                 offset: range.endOffset
             }
+            console.dir(start)
+            console.dir(end)
             let newNode
             // 2. 处理头尾-----首尾是一个节点的情况,应该是取一个交集
             if (start.node === end.node) {
@@ -226,7 +220,7 @@ const Mark = (props) => {
      */
     const findFatherNode = (node) => {
         // if (node.parentNode.className !== 'mark') {
-            return node.parentNode
+        return node.parentNode
         // } else {
         //     findFatherNode(node.parentNode)
         // }
