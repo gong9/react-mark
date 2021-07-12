@@ -3,11 +3,9 @@ import { useEffect, useRef } from 'react'
 import { getDomRange } from '../util.js/getDomRange.js'
 import './index.css'
 
-interface MarkProps {
-    children: HTMLElement
-}
 
-const Mark = (props: MarkProps) => {
+
+const Mark = (props) => {
     const { children } = props
     const markRef = useRef()
     let markArr02 = []
@@ -37,7 +35,7 @@ const Mark = (props: MarkProps) => {
      * @param {*} node
      * 进行包裹 
      */
-    const parseToDOM = (node: HTMLElement) => {
+    const parseToDOM = (node) => {
         const parentNode = node.parentNode
         if (parentNode) {
             const span = document.createElement("span");
@@ -51,30 +49,26 @@ const Mark = (props: MarkProps) => {
     /**；
      * 获取选取的dom信息
      */
-    interface InfoNode {
-        node: Node,
-        offset: number
-    }
     const electoral = () => {
         markArr = []
         flag = 0
         let range = getDomRange()
         if (range) {
             // 获取起始位置和终止位置
-            const start: InfoNode = {
+            const start = {
                 node: range.startContainer,
                 offset: range.startOffset
             }
-            const end: InfoNode = {
+            const end = {
                 node: range.endContainer,
                 offset: range.endOffset
             }
-            let newNode: Node
+            let newNode
             // 处理头尾-----首尾是一个节点的情况,应该是取一个交集
             if (start.node === end.node) {
                 newNode = splitNode(start.node, start.offset, end.offset)
                 data.push(serialize(newNode))
-                parseToDOM(newNode as HTMLElement)
+                parseToDOM(newNode)
             } else {
                 // 多节点的情况
                 traversalDom(start, end)
@@ -100,7 +94,7 @@ const Mark = (props: MarkProps) => {
      * 接受文本节点，拿到文本的相对于document的位置信息
      * 
      */
-    const serialize = (textNode: Node, root = document) => {
+    const serialize = (textNode, root = document) => {
         allTextNode = []
         const node = findFatherNode(textNode)
         getAllTextNode(node)
@@ -118,17 +112,17 @@ const Mark = (props: MarkProps) => {
         let Index = allTextNode.findIndex(textnode => textnode === textNode)
         if (Index === 0) {
             childIndexStart = 0     //前偏移
-            childIndexend = childIndexStart + (textNode as Text).length //后偏移
+            childIndexend = childIndexStart + textNode.length //后偏移
         } else if (Index === allTextNode.length - 1) {
             childIndexStart = calcLeftLength(Index)
-            childIndexend = childIndexStart + (textNode as Text).length
+            childIndexend = childIndexStart + textNode.length
         } else {
             childIndexStart = calcLeftLength(Index)
-            childIndexend = childIndexStart + (textNode as Text).length
+            childIndexend = childIndexStart + textNode.length
         }
 
         // 通过它父亲的节点进行定位就可以😬
-        const tagName = (node as HTMLElement).tagName
+        const tagName = node.tagName
         const list = root.getElementsByTagName(tagName)
         // 去掉mark所占的位置
         const newList = [...list].filter(node => node.className !== "mark")
@@ -196,8 +190,8 @@ const Mark = (props: MarkProps) => {
      * @param {*} header
      * 处理头部节点 
      */
-    const splitHeader = (header: InfoNode) => {
-        (header.node as Text).splitText(header.offset)
+    const splitHeader = header => {
+        header.node.splitText(header.offset)
         return header.node.nextSibling
     }
 
@@ -206,8 +200,8 @@ const Mark = (props: MarkProps) => {
      * @param {*} tail 
      * 处理尾部节点
      */
-    const splitTail = (tail: InfoNode) => {
-        return (tail.node as Text).splitText(tail.offset).previousSibling
+    const splitTail = (tail) => {
+        return tail.node.splitText(tail.offset).previousSibling
     }
 
     /**
@@ -217,8 +211,8 @@ const Mark = (props: MarkProps) => {
      * @param {*} tail 
      * 首尾在一个节点的情况
      */
-    const splitNode = (node: Node, header: number, tail: number) => {
-        let newNode = (node as Text).splitText(header)
+    const splitNode = (node, header, tail) => {
+        let newNode = node.splitText(header)
         newNode.splitText(tail - header)
         return newNode
     }
@@ -228,7 +222,7 @@ const Mark = (props: MarkProps) => {
      * @param {*} node
      * 获取父节点 
      */
-    const findFatherNode = (node: Node) => {
+    const findFatherNode = (node) => {
         return node.parentNode
     }
 
@@ -238,7 +232,7 @@ const Mark = (props: MarkProps) => {
      * @param {*} endNode 
      *  去拿每一个节点所属的孩子节点中的文本节点
      */
-    const collectTextNode = (node: Node, endNode: Node) => {
+    const collectTextNode = (node, endNode) => {
         if (node.nodeType === 3) {
             pushTextNode(node)
         }
@@ -248,7 +242,7 @@ const Mark = (props: MarkProps) => {
                 for (let i = 0; i < childNodes.length; i++) {
                     if (childNodes[i].nodeType === 3) {
                         pushTextNode(childNodes[i])
-                        if (childNodes[i] == endNode) {
+                        if (childNodes[i] === endNode) {
                             flag = 1
                             return
                         }
@@ -269,7 +263,7 @@ const Mark = (props: MarkProps) => {
      * @param {*} node
      * mark收集，push到到markArr数组中
      */
-    const pushTextNode = (node: Node) => {
+    const pushTextNode = (node) => {
         if (markArr.findIndex(item => node === item) === -1) {
             markArr.push(node)
         }
@@ -281,9 +275,9 @@ const Mark = (props: MarkProps) => {
      * @param {*} endNode 
      * 找亲叔叔😀
      */
-    const findUncle = (node: Node, endNode: Node) => {
+    const findUncle = (node, endNode) => {
         // 顶点边界判断
-        if (node == markRef.current) {
+        if (node === markRef.current) {
             return
         }
         let currentNode = node
@@ -296,7 +290,7 @@ const Mark = (props: MarkProps) => {
                 collectTextNode(currentNode, endNode)
                 currentNode = currentNode.nextSibling
             }
-            if (flag == 0) {
+            if (flag === 0) {
                 collectTextNode(currentNode, endNode)
                 findUncle(currentNode, endNode)
             } else {
@@ -314,15 +308,15 @@ const Mark = (props: MarkProps) => {
      * @param {*} end 
      * dom树遍历
      */
-    const traversalDom = (start: InfoNode, end: InfoNode) => {
+    const traversalDom = (start, end) => {
         let currentNode = start.node
         if (currentNode.nextSibling) {
-            while (currentNode != end.node && currentNode.nextSibling != null) {
+            while (currentNode !== end.node && currentNode.nextSibling !== null) {
                 collectTextNode(currentNode, end.node)
                 currentNode = currentNode.nextSibling
             }
             // 出来有两种可能 1. 找到了 2. 这一层到头了
-            if (flag == 0) {
+            if (flag === 0) {
                 collectTextNode(currentNode, end.node)
                 findUncle(currentNode, end.node)
             } else {
